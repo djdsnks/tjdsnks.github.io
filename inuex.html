@@ -1,1 +1,596 @@
+!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<title>🎮 游戏平台 · 官方导航站</title>
+	<style>
+		* { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Microsoft YaHei", sans-serif; }
+		body { 
+			background: linear-gradient(135deg, #1a1a2e, #16213e); 
+			min-height: 100vh; 
+			color: #fff;
+			padding: 20px 16px 100px;
+		}
+		.container { max-width: 640px; margin: 0 auto; }
+
+		h1 {
+			font-size: clamp(22px, 5vw, 30px);
+			text-align: center;
+			margin-bottom: 6px;
+			background: linear-gradient(90deg, #ffd700, #ffed4a);
+			-webkit-background-clip: text;
+			color: transparent;
+		}
+		.subtitle { text-align: center; font-size: clamp(12px, 3vw, 14px); color: #888; margin-bottom: 8px; line-height: 1.5; }
+		.limit-notice { text-align: center; font-size: clamp(11px, 2.5vw, 13px); color: #f59e0b; margin-bottom: 20px; background: rgba(245,158,11,0.1); padding: 8px 12px; border-radius: 8px; line-height: 1.6; }
+
+		.user-status { text-align: center; padding: 10px; border-radius: 8px; background: rgba(34,197,94,0.1); color: #22c55e; font-size: clamp(13px, 2.8vw, 14px); margin-bottom: 18px; display: none; }
+		.user-status.admin { background: rgba(59,130,246,0.15); color: #60a5fa; }
+
+		.nav-buttons { display: flex; gap: clamp(10px, 2.5vw, 12px); margin-bottom: 20px; }
+		.nav-btn {
+			flex: 1; padding: clamp(10px, 2.5vw, 12px); border-radius: 10px; border: none;
+			font-size: clamp(14px, 3vw, 15px); font-weight: 600; cursor: pointer; transition: all 0.25s ease; text-decoration: none; text-align: center;
+		}
+		.login-btn { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; }
+		.login-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(59,130,246,0.3); }
+		.register-btn { background: linear-gradient(135deg, #ffd700, #f59e0b); color: #000; }
+		.register-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(255,215,0,0.3); }
+		.nav-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none; display: none; }
+
+		.section-title { font-size: clamp(14px, 3vw, 15px); color: #aaa; margin: 28px 0 10px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+		.region-tab { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+		.region-btn {
+			padding: 8px 14px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15);
+			background: rgba(255,255,255,0.05); color: #ccc; cursor: pointer; transition: all 0.25s ease; font-size: clamp(12px, 2.5vw, 13px);
+		}
+		.region-btn.active { border-color: #ffd700; background: rgba(255,215,0,0.12); color: #ffd700; font-weight: 600; }
+		.region-btn:hover { border-color: rgba(255,215,0,0.4); }
+
+		.region-content { display: none; }
+		.region-content.active { display: block; animation: fadeIn 0.3s ease; }
+		@keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+		.card {
+			background: rgba(255,255,255,0.05); border-radius: 14px; padding: clamp(14px, 3.5vw, 18px); margin-bottom: 12px;
+			border: 1px solid rgba(255,215,0,0.15); transition: all 0.25s ease;
+		}
+		.card:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(255,215,0,0.1); }
+		.card h3 { font-size: clamp(15px, 3.2vw, 16px); color: #ffd700; margin-bottom: 6px; }
+		.card p { font-size: clamp(12px, 2.6vw, 13px); color: #888; margin-bottom: 12px; line-height: 1.7; }
+		.card-link {
+			display: inline-block; padding: clamp(8px, 2vw, 10px) clamp(14px, 3vw, 18px); background: rgba(255,215,0,0.12);
+			color: #ffd700; border-radius: 8px; text-decoration: none; font-size: clamp(13px, 2.8vw, 14px); font-weight: 500; transition: all 0.2s ease; margin-right: 8px; margin-bottom: 6px;
+		}
+		.card-link:hover { background: rgba(255,215,0,0.25); }
+		.card-link.play { background: rgba(34,197,94,0.15); color: #22c55e; }
+		.card-link.play:hover { background: rgba(34,197,94,0.25); }
+		.lock-hint { text-align: center; padding: 30px 20px; color: #777; font-size: clamp(14px, 3vw, 15px); line-height: 1.8; }
+		.lock-hint span { color: #ffd700; }
+
+		.review-section { margin-top: 40px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 25px; }
+		.review-title { font-size: clamp(15px, 3.2vw, 16px); color: #ffd700; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+		.review-count { font-size: 13px; color: #888; font-weight: normal; }
+
+		.star-rating { display: flex; gap: 6px; margin-bottom: 12px; }
+		.star { font-size: 26px; cursor: pointer; color: #444; transition: all 0.2s ease; user-select: none; }
+		.star:hover, .star.active { color: #ffd700; transform: scale(1.15); }
+
+		.review-input-box { background: rgba(255,255,255,0.04); border-radius: 12px; padding: 16px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.15); }
+		.review-textarea {
+			width: 100%; min-height: 90px; padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);
+			background: rgba(255,255,255,0.06); color: #fff; font-size: 15px; resize: vertical; outline: none;
+		}
+		.review-textarea:focus { border-color: #ffd700; }
+		.anon-row { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+		.anon-row input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+		.anon-row label { font-size: 14px; color: #aaa; cursor: pointer; line-height: 1.5; }
+		.review-btn {
+			width: 100%; padding: 12px; border-radius: 9px; border: none; font-size: 16px; font-weight: 600;
+			background: linear-gradient(135deg, #ffd700, #f59e0b); color: #000; cursor: pointer; transition: all 0.25s ease;
+		}
+		.review-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255,215,0,0.3); }
+
+		.review-item {
+			background: rgba(255,255,255,0.04); border-radius: 10px; padding: 14px; margin-bottom: 10px;
+			border: 1px solid rgba(255,255,255,0.06);
+		}
+		.review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px; }
+		.review-user { font-size: 14px; color: #ddd; font-weight: 500; }
+		.review-user.anon { color: #888; }
+		.review-stars { font-size: 16px; color: #ffd700; letter-spacing: 2px; }
+		.review-time { font-size: 11px; color: #555; margin-top: 4px; }
+		.review-content { font-size: 14px; color: #bbb; line-height: 1.7; word-break: break-all; }
+		.login-tip { text-align: center; padding: 24px 20px; color: #888; font-size: 15px; background: rgba(255,255,255,0.03); border-radius: 10px; line-height: 1.8; }
+		.login-tip a { color: #ffd700; text-decoration: none; font-weight: 500; }
+
+		.settings-section { margin-top: 35px; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 25px; display: none; }
+		.settings-section.show { display: block; }
+		.settings-title { font-size: clamp(14px, 3vw, 15px); color: #aaa; margin-bottom: 12px; }
+		.settings-item {
+			display: flex; justify-content: space-between; align-items: center;
+			padding: clamp(12px, 3vw, 14px) 16px; background: rgba(255,255,255,0.04); border-radius: 10px; margin-bottom: 8px;
+			cursor: pointer; transition: all 0.2s ease; font-size: clamp(14px, 3vw, 15px);
+		}
+		.settings-item:hover { background: rgba(255,255,255,0.08); }
+		.settings-item.danger { color: #f87171; }
+		.settings-item.danger:hover { background: rgba(248,113,113,0.1); }
+		.settings-item .arrow { color: #666; font-size: 12px; }
+		.about-box { margin-top: 12px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 10px; font-size: clamp(11px, 2.4vw, 12px); color: #666; line-height: 1.8; }
+		.about-box .version { color: #aaa; margin-bottom: 6px; }
+		.about-box .icp { color: #888; margin-top: 4px; }
+		.about-box .icp a { color: #888; text-decoration: none; }
+
+		.modal-overlay {
+			position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+			background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; z-index: 999; padding: 16px;
+		}
+		.modal-overlay.show { display: flex; }
+		.modal {
+			background: #1e1e2f; border-radius: 16px; padding: clamp(20px, 5vw, 28px); max-width: 420px; width: 100%;
+			border: 1px solid rgba(255,215,0,0.2); max-height: 90vh; overflow-y: auto;
+		}
+		.modal.large { max-width: 480px; }
+		.modal h2 { font-size: clamp(18px, 4vw, 20px); color: #ffd700; margin-bottom: 18px; text-align: center; }
+		.modal h3 { font-size: clamp(14px, 3vw, 15px); color: #ddd; margin: 16px 0 8px; }
+		.modal p { font-size: clamp(12px, 2.6vw, 13px); color: #999; line-height: 1.7; margin-bottom: 6px; }
+		.form-group { margin-bottom: 14px; }
+		.form-group label { display: block; font-size: clamp(13px, 2.8vw, 14px); color: #ccc; margin-bottom: 6px; }
+		.form-group input {
+			width: 100%; padding: clamp(10px, 2.5vw, 12px) 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15);
+			background: rgba(255,255,255,0.06); color: #fff; font-size: clamp(14px, 3vw, 15px); outline: none;
+		}
+		.form-group input:focus { border-color: #ffd700; }
+		.checkbox-row { display: flex; align-items: flex-start; gap: 8px; margin-bottom: 16px; }
+		.checkbox-row input[type="checkbox"] { margin-top: 3px; cursor: pointer; width: 16px; height: 16px; flex-shrink: 0; }
+		.checkbox-row label { font-size: clamp(12px, 2.6vw, 13px); color: #aaa; line-height: 1.6; }
+		.terms-box {
+			background: rgba(255,255,255,0.04); border-radius: 8px; padding: 12px;
+			max-height: 160px; overflow-y: auto; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.08);
+		}
+		.form-btn {
+			width: 100%; padding: clamp(11px, 2.8vw, 13px); border-radius: 9px; border: none; font-size: clamp(15px, 3.2vw, 16px); font-weight: 600; cursor: pointer; transition: all 0.25s ease; margin-top: 6px;
+		}
+		.form-btn.primary { background: linear-gradient(135deg, #ffd700, #f59e0b); color: #000; }
+		.form-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(255,215,0,0.3); }
+		.form-btn.secondary { background: rgba(255,255,255,0.1); color: #ccc; }
+		.form-btn.secondary:hover { background: rgba(255,255,255,0.18); }
+		.invite-note { font-size: clamp(11px, 2.4vw, 12px); color: #f59e0b; margin-top: -8px; margin-bottom: 12px; line-height: 1.5; }
+		.notice { margin-top: 30px; font-size: clamp(11px, 2.4vw, 12px); color: #555; text-align: center; line-height: 1.8; }
+		.serial-code { margin-top: 8px; font-size: 11px; color: #444; text-align: center; letter-spacing: 0.5px; }
+
+		@media (min-width: 768px) {
+			body { padding: 40px 20px 100px; }
+			.container { max-width: 680px; }
+			.region-tab { gap: 10px; }
+			.region-btn { padding: 9px 18px; }
+			.card-link { min-width: 110px; text-align: center; }
+			.nav-buttons { gap: 12px; }
+			.star { font-size: 30px; }
+		}
+		@media (min-width: 1024px) {
+			.container { max-width: 720px; }
+			body { padding: 50px 20px 100px; }
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>🎮 游戏平台 · 官方导航站</h1>
+		<p class="subtitle">登录后解锁全部 · 网页秒玩 · 分区展示 · 官方直链 · 用户评价</p>
+		<div class="limit-notice">📢 当前仅限 <strong id="regCount">0</strong>/20 人注册 · 满员后永久关闭，仅保留老账号登录</div>
+
+		<div id="userStatus" class="user-status">✅ 已登录：<span id="userEmail"></span> <span id="adminTag" style="display:none">🔷 管理员</span></div>
+
+		<div class="nav-buttons" id="authButtons">
+			<button class="nav-btn login-btn" onclick="openModal('loginModal')">🔐 登录</button>
+			<button class="nav-btn register-btn" id="regBtn" onclick="openModal('registerModal')">📝 注册</button>
+		</div>
+
+		<div class="section-title">🌐 平台导航 · 共21个官方入口</div>
+		<div class="region-tab">
+			<button class="region-btn active" data-region="all">全部</button>
+			<button class="region-btn" data-region="tw">🇹🇼 台区</button>
+			<button class="region-btn" data-region="my">🇲🇾 马区</button>
+			<button class="region-btn" data-region="hk">🇭🇰 港区</button>
+			<button class="region-btn" data-region="th">🇹🇭 泰区</button>
+			<button class="region-btn" data-region="global">🌍 国际通用</button>
+		</div>
+
+		<div id="region-all" class="region-content active">
+			<div class="lock-hint"><span>🔒 登录后解锁全部官方链接</span></div>
+		</div>
+		<div id="region-tw" class="region-content">
+			<div class="lock-hint"><span>🔒 登录后解锁台区链接</span></div>
+		</div>
+		<div id="region-my" class="region-content">
+			<div class="lock-hint"><span>🔒 登录后解锁马区链接</span></div>
+		</div>
+		<div id="region-hk" class="region-content">
+			<div class="lock-hint"><span>🔒 登录后解锁港区链接</span></div>
+		</div>
+		<div id="region-th" class="region-content">
+			<div class="lock-hint"><span>🔒 登录后解锁泰区链接</span></div>
+		</div>
+		<div id="region-global" class="region-content">
+			<div class="lock-hint"><span>🔒 登录后解锁国际通用链接</span></div>
+		</div>
+
+		<div class="section-title">🎮 网页秒玩 · 点开即玩</div>
+		<div class="region-tab">
+			<button class="region-btn active" data-region="sw-all">全部秒玩</button>
+			<button class="region-btn" data-region="sw-cn">🇨🇳 国内秒玩</button>
+			<button class="region-btn" data-region="sw-int">🌍 国际秒玩</button>
+		</div>
+
+		<div id="region-sw-all" class="region-content active">
+			<div class="lock-hint"><span>🔒 登录后解锁全部秒玩入口</span></div>
+		</div>
+		<div id="region-sw-cn" class="region-content">
+			<div class="lock-hint"><span>🔒 登录后解锁国内秒玩</span></div>
+		</div>
+		<div id="region-sw-int" class="region-content">
+			<div class="lock-hint"><span>🔒 登录后解锁国际秒玩</span></div>
+		</div>
+
+		<div class="review-section">
+			<div class="review-title">
+				⭐ 用户好评 <span class="review-count" id="reviewCount">(0条评价)</span>
+			</div>
+			<div id="reviewLoginTip" class="login-tip">
+				🔐 <a href="#" onclick="openModal('loginModal');return false;">登录</a> 后即可发表评价 · 支持匿名 · 不限次数
+			</div>
+			<div id="reviewInputArea" style="display:none;">
+				<div class="review-input-box">
+					<div style="margin-bottom:8px;font-size:14px;color:#aaa;">点击星星打分：</div>
+					<div class="star-rating" id="starRating">
+						<span class="star" data-value="1">★</span>
+						<span class="star" data-value="2">★</span>
+						<span class="star" data-value="3">★</span>
+						<span class="star" data-value="4">★</span>
+						<span class="star" data-value="5">★</span>
+					</div>
+					<textarea class="review-textarea" id="reviewText" placeholder="分享你的体验~"></textarea>
+					<div class="anon-row">
+						<input type="checkbox" id="anonCheck">
+						<label for="anonCheck">🙈 匿名发布</label>
+					</div>
+					<button class="review-btn" onclick="submitReview()">✨ 提交评价</button>
+				</div>
+			</div>
+			<div id="reviewList"></div>
+		</div>
+
+		<div id="settingsSection" class="settings-section">
+			<div class="settings-title">⚙️ 设置</div>
+			<div class="settings-item" onclick="openModal('legalModal')"><span>📜 法律条款</span><span class="arrow">›</span></div>
+			<div class="settings-item" onclick="openModal('agreementModal')"><span>📋 用户协议</span><span class="arrow">›</span></div>
+			<div class="settings-item" onclick="openModal('privacyModal')"><span>🔒 隐私政策</span><span class="arrow">›</span></div>
+			<div class="settings-item" onclick="switchAccount()"><span>🔄 切换账号</span><span class="arrow">›</span></div>
+			<div class="settings-item danger" onclick="logout()"><span>🚪 退出账号</span><span class="arrow">›</span></div>
+			<div class="about-box">
+				<div class="version">版本号：v1.6.0 · 修复登录/邮箱唯一/上限锁死</div>
+				<div class="about-text">关于我们：官方导航 · 满员后永久关闭注册</div>
+				<div class="icp"><a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener">京ICP备849418571688号</a></div>
+			</div>
+		</div>
+
+		<div class="notice">
+			⚠️ 安全提醒：访问核对域名 · 外部链接自行评估风险 · 理性娱乐 · 适度消费<br>
+			注册上限20人 · 邮箱唯一不可重复 · 满员后仅保留老账号登录入口
+		</div>
+	</div>
+
+	<!-- 登录弹窗 -->
+	<div id="loginModal" class="modal-overlay">
+		<div class="modal">
+			<h2>🔐 登录账号</h2>
+			<div class="form-group"><label>邮箱地址</label><input type="email" id="loginEmail" placeholder="请输入注册邮箱"></div>
+			<div class="form-group"><label>密码</label><input type="password" id="loginPwd" placeholder="请输入密码"></div>
+			<button class="form-btn primary" onclick="doLogin()">立即登录</button>
+			<button class="form-btn secondary" onclick="closeModal('loginModal')">取消</button>
+		</div>
+	</div>
+
+	<!-- 注册弹窗 -->
+	<div id="registerModal" class="modal-overlay">
+		<div class="modal">
+			<h2>📝 注册新账号</h2>
+			<div class="terms-box">
+				<h3>📜 平台使用条款</h3>
+				<p>1. 仅限前20名用户注册，满员后永久关闭，仅保留登录入口。</p>
+				<p>2. 一个邮箱仅能注册一次，不可重复占用。</p>
+				<p>3. 本平台仅提供官方导航与秒玩入口，不参与游戏运营。</p>
+				<p>4. 禁止违法内容，违者封禁并保留追责权利。</p>
+			</div>
+			<div class="checkbox-row">
+				<input type="checkbox" id="agreeTerms">
+				<label for="agreeTerms">我已阅读并同意条款与法律规定</label>
+			</div>
+			<div class="form-group"><label>邮箱地址</label><input type="email" id="regEmail" placeholder="example@xxx.com"></div>
+			<div class="form-group"><label>设置密码（至少6位）</label><input type="password" id="regPwd" placeholder="请输入密码"></div>
+			<div class="form-group"><label>确认密码</label><input type="password" id="regPwd2" placeholder="再次输入密码"></div>
+			<div class="form-group"><label>邀请码（选填）</label><input type="text" id="regInvite" placeholder="请输入邀请码"></div>
+			<button class="form-btn primary" id="regSubmitBtn" onclick="doRegister()">立即注册</button>
+			<button class="form-btn secondary" onclick="closeModal('registerModal')">取消</button>
+		</div>
+	</div>
+
+	<div id="legalModal" class="modal-overlay"><div class="modal large"><h2>📜 法律条款</h2><div style="max-height:60vh;overflow-y:auto;"><h3>一、适用范围</h3><p>访问即表示同意，须遵守中国法律法规。外部链接跳转第三方，风险自担。</p><h3>二、服务性质</h3><p>仅提供导航入口，不运营游戏、不承担第三方纠纷与损失。</p><h3>三、账号规则</h3><p>仅限前20人注册，一邮箱一号，满员后永久关闭注册。</p><h3>四、禁止行为</h3><p>禁止违法用途、批量注册，违者封禁。</p></div><button class="form-btn secondary" onclick="closeModal('legalModal')">我已了解</button></div></div>
+	<div id="agreementModal" class="modal-overlay"><div class="modal large"><h2>📋 用户协议</h2><div style="max-height:60vh;overflow-y:auto;"><h3>1. 账号规则</h3><p>前20名开放注册，一邮箱仅能注册一次，满员后永久关闭注册入口，仅保留老账号登录。</p><h3>2. 服务内容</h3><p>平台导航 + 网页秒玩入口 + 用户评价系统。</p><h3>3. 外部链接</h3><p>跳转第三方平台，用户自行评估风险。</p></div><button class="form-btn secondary" onclick="closeModal('agreementModal')">我已阅读并同意</button></div></div>
+	<div id="privacyModal" class="modal-overlay"><div class="modal large"><h2>🔒 隐私政策</h2><div style="max-height:60vh;overflow-y:auto;"><h3>一、信息收集</h3><p>仅收集邮箱用于登录验证，密码保存在本地浏览器。邮箱唯一不可重复注册。</p><h3>二、数据存储</h3><p>账号列表独立存储，清除浏览器数据会重置名额与账号库。</p><h3>三、保护</h3><p>不收集手机号、身份证、位置等敏感信息。</p></div><button class="form-btn secondary" onclick="closeModal('privacyModal')">我已了解</button></div></div>
+
+	<script>
+		const MAX_REG = 20;
+		let isLoggedIn = false, isAdmin = false, currentUserEmail = '';
+		let selectedStars = 0;
+
+		// === 星级评分 ===
+		document.querySelectorAll('#starRating .star').forEach(star => {
+			star.addEventListener('click', function() {
+				selectedStars = parseInt(this.dataset.value);
+				highlightStars(selectedStars);
+			});
+			star.addEventListener('mouseover', function() {
+				highlightStars(parseInt(this.dataset.value));
+			});
+		});
+		document.getElementById('starRating').addEventListener('mouseleave', function() {
+			highlightStars(selectedStars);
+		});
+		function highlightStars(count) {
+			document.querySelectorAll('#starRating .star').forEach((star, idx) => {
+				star.classList.toggle('active', idx < count);
+			});
+		}
+
+		// === 评价存储与渲染 ===
+		function getReviews() { return JSON.parse(localStorage.getItem('reviews') || '[]'); }
+		function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+		function renderReviews() {
+			const list = getReviews();
+			const box = document.getElementById('reviewList');
+			document.getElementById('reviewCount').textContent = `(${list.length}条评价)`;
+			if (!list.length) {
+				box.innerHTML = '<div style="text-align:center;color:#666;padding:24px;">暂无评价，快来抢沙发吧~ 🎉</div>';
+				return;
+			}
+			box.innerHTML = list.map(r => `
+				<div class="review-item">
+					<div class="review-header">
+						<span class="review-user ${r.anon?'anon':''}">${r.anon?'🙈 匿名用户':escapeHtml(r.email)}</span>
+						<span class="review-stars">${'★'.repeat(r.stars)}${'☆'.repeat(5-r.stars)}</span>
+					</div>
+					<div class="review-content">${escapeHtml(r.content) || '此用户未填写评价内容'}</div>
+					<div class="review-time">${r.time}</div>
+				</div>
+			`).join('');
+		}
+		function submitReview() {
+			if (!isLoggedIn) return alert('请先登录');
+			if (!selectedStars) return alert('请先点击星星打分（1–5星）');
+			const content = document.getElementById('reviewText').value.trim();
+			const anon = document.getElementById('anonCheck').checked;
+			if (!content) return alert('请写下你的评价内容~');
+
+			const review = {
+				stars: selectedStars,
+				content: content,
+				anon: anon,
+				email: anon ? '' : currentUserEmail,
+				time: new Date().toLocaleString('zh-CN')
+			};
+			const list = getReviews();
+			list.unshift(review);
+			localStorage.setItem('reviews', JSON.stringify(list));
+			document.getElementById('reviewText').value = '';
+			document.getElementById('anonCheck').checked = false;
+			selectedStars = 0;
+			highlightStars(0);
+			renderReviews();
+			alert('✅ 评价提交成功！感谢你的分享~');
+		}
+
+		// === 账号库管理：读取/保存/查重 ===
+		function getUserList() { return JSON.parse(localStorage.getItem('userList') || '[]'); }
+		function saveUserList(list) { localStorage.setItem('userList', JSON.stringify(list)); }
+		function emailExists(email) {
+			return getUserList().some(u => u.email.toLowerCase() === email.toLowerCase());
+		}
+		function getRegCount() { return getUserList().length; }
+		function updateRegUI() {
+			const c = getRegCount();
+			document.getElementById('regCount').textContent = c;
+			const regBtn = document.getElementById('regBtn');
+			if (c >= MAX_REG) {
+				regBtn.disabled = true;
+				regBtn.style.display = 'none'; // 满员直接隐藏注册按钮，彻底锁死
+			}
+		}
+
+		document.querySelectorAll('.region-btn').forEach(btn => {
+			btn.addEventListener('click', () => {
+				const isSw = btn.dataset.region.startsWith('sw-');
+				document.querySelectorAll(isSw ? '[data-region^="sw-"]' : ':not([data-region^="sw-"])[data-region]').forEach(b => b.classList.remove('active'));
+				btn.classList.add('active');
+				document.querySelectorAll(isSw ? '[id^="region-sw-"]' : '.region-content:not([id^="region-sw-"])').forEach(c => c.classList.remove('active'));
+				document.getElementById('region-' + btn.dataset.region).classList.add('active');
+			});
+		});
+
+		function openModal(id) {
+			if (getRegCount() >= MAX_REG && id === 'registerModal') {
+				alert('⚠️ 注册名额已满，永久关闭。仅保留老账号登录入口！');
+				return;
+			}
+			document.getElementById(id).classList.add('show');
+		}
+		function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+		function doRegister() {
+			const c = getRegCount();
+			if (c >= MAX_REG) return alert('⚠️ 注册名额已满，永久关闭！');
+
+			const agree = document.getElementById('agreeTerms').checked;
+			const email = document.getElementById('regEmail').value.trim();
+			const pwd = document.getElementById('regPwd').value;
+			const pwd2 = document.getElementById('regPwd2').value;
+			const invite = document.getElementById('regInvite').value.trim();
+
+			if (!agree) return alert('请先阅读并同意条款');
+			if (!email || !email.includes('@')) return alert('请输入有效邮箱');
+			if (emailExists(email)) return alert('⚠️ 该邮箱已被注册！一个邮箱仅能注册一次');
+			if (pwd.length < 6) return alert('密码至少6位');
+			if (pwd !== pwd2) return alert('两次密码不一致');
+
+			isAdmin = invite.toLowerCase() === 'ty12';
+			const userList = getUserList();
+			userList.push({ email: email, pwd: pwd, isAdmin: isAdmin ? 1 : 0 });
+			saveUserList(userList);
+
+			isLoggedIn = true;
+			currentUserEmail = email;
+			isAdmin = isAdmin;
+			localStorage.setItem('lastLoginEmail', email);
+
+			closeModal('registerModal');
+			updateRegUI();
+			updateUI();
+			alert('✅ 注册成功！' + (isAdmin ? ' 获得管理员权限' : ''));
+		}
+
+		function doLogin() {
+			const email = document.getElementById('loginEmail').value.trim();
+			const pwd = document.getElementById('loginPwd').value;
+			if (!email || !pwd) return alert('请输入邮箱和密码');
+
+			const user = getUserList().find(u => u.email.toLowerCase() === email.toLowerCase() && u.pwd === pwd);
+			if (user) {
+				isLoggedIn = true;
+				currentUserEmail = user.email;
+				isAdmin = user.isAdmin === 1;
+				localStorage.setItem('lastLoginEmail', user.email);
+				closeModal('loginModal');
+				updateUI();
+				alert('✅ 登录成功！' + (isAdmin ? ' 管理员已识别' : ''));
+			} else {
+				alert('❌ 邮箱或密码错误！请确认：① 已注册 ② 密码正确 ③ 邮箱无空格');
+			}
+		}
+
+		function updateUI() {
+			if (isLoggedIn) {
+				document.getElementById('authButtons').style.display = 'none';
+				document.getElementById('userStatus').style.display = 'block';
+				document.getElementById('userEmail').textContent = currentUserEmail;
+				if (isAdmin) document.getElementById('adminTag').style.display = 'inline';
+				document.getElementById('settingsSection').classList.add('show');
+				document.getElementById('reviewLoginTip').style.display = 'none';
+				document.getElementById('reviewInputArea').style.display = 'block';
+				unlockAllRegions();
+			}
+			renderReviews();
+		}
+
+		function switchAccount() { if (!confirm('确定切换账号？当前状态将退出。')) return; logout(); setTimeout(() => openModal('loginModal'), 300); }
+		function logout() {
+			if (!confirm('确定退出？')) return;
+			isLoggedIn = isAdmin = false; currentUserEmail = ''; selectedStars = 0;
+			document.getElementById('authButtons').style.display = 'flex';
+			document.getElementById('userStatus').style.display = 'none';
+			document.getElementById('adminTag').style.display = 'none';
+			document.getElementById('settingsSection').classList.remove('show');
+			document.getElementById('reviewLoginTip').style.display = 'block';
+			document.getElementById('reviewInputArea').style.display = 'none';
+			resetLocks();
+			alert('已退出');
+		}
+
+		function resetLocks() {
+			document.getElementById('region-all').innerHTML = `<div class="lock-hint"><span>🔒 登录后解锁全部官方链接</span></div>`;
+			document.getElementById('region-tw').innerHTML = `<div class="lock-hint"><span>🔒 登录后解锁台区链接</span></div>`;
+			document.getElementById('region-my').innerHTML = `<div class="lock-hint"><span>🔒 登录后解锁马区链接</span></div>`;
+			document.getElementById('region-hk').innerHTML = `<div class="lock-hint"><span>🔒 登录后解锁港区链接</span></div>`;
+			document.getElementById('region-th').innerHTML = `<div class="lock-hint"><span>🔒 登录后解锁泰区链接</span></div>`;
+			document.getElementById('region-global').innerHTML = `<div class="lock-hint"><span>🔒 登录后解锁国际通用链接</span></div>`;
+			document.getElementById('region-sw-all').innerHTML = `<div class="lock-hint"><span>🔒 登录后解锁全部秒玩入口</span></div>`;
+			document.getElementById('region-sw-cn').innerHTML = `<div class="lock-hint"><span>🔒 登录后解锁国内秒玩</span></div>`;
+			document.getElementById('region-sw-int').innerHTML = `<div class="lock-hint"><span>🔒 登录后解锁国际秒玩</span></div>`;
+		}
+
+		function unlockAllRegions() {
+			document.getElementById('region-all').innerHTML = `
+				<div class="card"><h3>📱 TapTap 发现好游戏</h3><p>国内手游社区 · 评分/预约/下载/论坛</p><a href="https://www.taptap.cn" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+				<div class="card"><h3>🎁 66手游 折扣平台</h3><p>手游充值低至0.05折 · 代金券/开服表/福利</p><a href="https://www.66shouyou.com" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+				<div class="card"><h3>🌐 Codashop 全球直充</h3><p>官方直充 · 免登录 · 秒到账 · 支持多区服</p><a href="https://www.codashop.com" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+				<div class="card"><h3>🎮 4399 小游戏</h3><p>网页小游戏大全 · 无需下载 · 点开即玩</p><a href="http://www.4399.com" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+				<div class="card"><h3>📺 B站游戏中心</h3><p>Bilibili游戏 · 联运/独家/预约/礼包</p><a href="https://game.bilibili.com" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+				<div class="card"><h3>🛒 Steam 商店</h3><p>全球最大PC游戏平台 · 购买/下载/社区/更新</p><a href="https://store.steampowered.com" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+			`;
+			document.getElementById('region-tw').innerHTML = `
+				<div class="card"><h3>🇹🇼 GAME HOURS 遊戲平台</h3><p>台服/国际服储值 · 代金券优惠 · 返利活动</p><a href="https://www.gamehours.com" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+				<div class="card"><h3>🇹🇼 MyCard 数位点卡</h3><p>台湾通用点卡 · 游戏/影音/平台储值通用</p><a href="https://www.mycard520.com.tw" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+				<div class="card"><h3>🇹🇼 Codashop 台湾版</h3><p>台币直充 · 手游/网游官方直连 · 快速到账</p><a href="https://www.codashop.com/zh-tw" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+			`;
+			document.getElementById('region-my').innerHTML = `
+				<div class="card"><h3>🇲🇾 Codashop 马来西亚</h3><p>马币直充 · 中文/英文 · MLBB/PUBG/手游</p><a href="https://www.codashop.com/en-my" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+			`;
+			document.getElementById('region-hk').innerHTML = `
+				<div class="card"><h3>🇭🇰 Codashop 香港版</h3><p>港币直充 · 本地支付 · 热门手游全覆盖</p><a href="https://www.codashop.com/zh-hk" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+			`;
+			document.getElementById('region-th').innerHTML = `
+				<div class="card"><h3>🇹🇭 Codashop 泰国版</h3><p>泰铢直充 · 本地支付渠道 · MLBB/PUBG/ROV</p><a href="https://www.codashop.com/th-th" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+			`;
+			document.getElementById('region-global').innerHTML = `
+				<div class="card"><h3>🌍 Codashop 国际版</h3><p>全球多区服 · 多币种 · 直充到账 · 无手续费</p><a href="https://www.codashop.com" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+				<div class="card"><h3>🌍 Razer Gold 全球</h3><p>雷蛇金币 · 全球通用 · 游戏/服务储值</p><a href="https://gold.razer.com" target="_blank" rel="noopener noreferrer" class="card-link">进入 →</a></div>
+			`;
+			document.getElementById('region-sw-all').innerHTML = `
+				<div class="card"><h3>🐷 小猪秒玩（App）</h3><p>海量小游戏 · 即点即玩 · 无需下载</p><a href="https://Cn.pigame.cc" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🎮 4399 经典小游戏</h3><p>国内最大 · 数万款 · 无需下载 · 点开即玩</p><a href="http://www.4399.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🎮 7k7k 休闲小游戏</h3><p>热门精选 · 动作/冒险/双人/益智</p><a href="https://www.7k7k.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🎮 CrazyGames 国际平台</h3><p>全球精选 · HTML5原生 · 数千款 · 无地区限制</p><a href="https://www.crazygames.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🎮 Poki 在线游戏中心</h3><p>全球热门 · 手机/电脑互通 · 即点即玩</p><a href="https://poki.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🎮 Cool Math Games</h3><p>益智启蒙 · 全年龄友好
+				<div class="card"><h3>🎮 Cool Math Games</h3><p>益智启蒙 · 全年龄友好 · 解谜/逻辑/休闲 · 寓教于乐</p><a href="https://www.coolmathgames.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🎮 Kongregate 独立游戏</h3><p>独立开发者聚集地 · 创意佳作 · 支持存档 · 社区评分排行</p><a href="https://www.kongregate.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🎮 Y8 经典在线</h3><p>老牌国际平台 · 数万款经典 · 双人/联机/模拟器 · 怀旧首选</p><a href="https://www.y8.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+			`;
+
+			document.getElementById('region-sw-cn').innerHTML = `
+				<div class="card"><h3>🐷 小猪秒玩（App）</h3><p>海量小游戏 · 即点即玩 · 无需下载 · 手机端体验更佳</p><a href="https://Cn.pigame.cc" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🇨🇳 4399 小游戏</h3><p>国内最大网页游戏库 · 经典/新作/双人/合集 · 无需安装 · 一键启动</p><a href="http://www.4399.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🇨🇳 7k7k 小游戏</h3><p>休闲游戏精选 · 动作/冒险/换装/经营 · 流畅无卡顿 · 免费体验</p><a href="https://www.7k7k.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🇨🇳 2144 小游戏</h3><p>精品网页游戏 · 单机/联机/双人 · 绿色无捆绑 · 高速加载</p><a href="https://www.2144.cn" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🇨🇳 小游戏大全</h3><p>休闲/益智/闯关/合集 · 分类清晰 · 随时游玩 · 无需下载</p><a href="https://www.xiaoyouxi.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+			`;
+
+			document.getElementById('region-sw-int').innerHTML = `
+				<div class="card"><h3>🐷 小猪秒玩（App）</h3><p>海量小游戏 · 即点即玩 · 无需下载 · 手机端体验更佳</p><a href="https://Cn.pigame.cc" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🌍 CrazyGames 国际版</h3><p>全球最新网页游戏 · 原生HTML5 · 无地区限制 · 多语言 · 每日更新</p><a href="https://www.crazygames.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🌍 Poki 全球游戏平台</h3><p>全球热门 · 手机/电脑自动适配 · 即点即玩 · 无需注册 · 存档同步</p><a href="https://poki.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🌍 Cool Math Games 益智</h3><p>益智/解谜/逻辑 · 全年龄友好 · 轻松上手 · 寓教于乐</p><a href="https://www.coolmathgames.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🌍 Kongregate 独立游戏</h3><p>独立开发者聚集地 · 创意佳作 · 支持存档 · 社区评分排行</p><a href="https://www.kongregate.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🌍 Y8 经典在线</h3><p>老牌国际平台 · 数万款经典 · 双人/联机/模拟器 · 怀旧首选</p><a href="https://www.y8.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+				<div class="card"><h3>🌍 Agame 休闲精选</h3><p>休闲/竞技/冒险 · 分类齐全 · 加载快速 · 全球热门</p><a href="https://www.agame.com" target="_blank" rel="noopener noreferrer" class="card-link play">▶ 开始秒玩</a></div>
+			`;
+		}
+
+		// === 初始化 ===
+		updateRegUI();
+		renderReviews();
+		const lastEmail = localStorage.getItem('lastLoginEmail');
+		if (lastEmail) {
+			const user = getUserList().find(u => u.email.toLowerCase() === lastEmail.toLowerCase());
+			if (user) {
+				isLoggedIn = true;
+				isAdmin = user.isAdmin === 1;
+				currentUserEmail = user.email;
+				updateUI();
+			}
+		}
+	</script>
+</body>
+</html>
 
